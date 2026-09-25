@@ -1,0 +1,380 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import WorkCard from '../components/WorkCard.astro';
+import { profile, experience, openSource, stack, resumes } from '../data/profile';
+
+const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+const notes = (await getCollection('notes')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const sections = [
+  { id: 'work', label: 'Selected work' },
+  { id: 'about', label: 'About' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'code', label: 'Open source' },
+  { id: 'notes', label: 'Notes' },
+  { id: 'contact', label: 'Contact' },
+];
+
+const fmt = (d: Date) => d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+---
+
+<Base>
+  <div class="shell">
+    <header class="rail">
+      <div class="fade">
+        <p class="eyebrow">{profile.location}</p>
+        <h1><a href="/">{profile.name}</a></h1>
+        <p class="title">Senior Backend Engineer <em class="s">· Go</em></p>
+        <p class="tagline">{profile.tagline}</p>
+      </div>
+
+      <nav class="nav fade fade-2" aria-label="Sections">
+        <ul>
+          {
+            sections.map((s, i) => (
+              <li>
+                <a href={`#${s.id}`} data-nav={s.id}>
+                  <span class="mono num">0{i + 1}</span>
+                  <span class="bar" />
+                  <span class="lbl">{s.label}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="rail-foot fade fade-3">
+        <a class="btn primary" href={resumes[0].file} target="_blank" rel="noopener">Resume <span class="arrow">↗</span></a>
+        <ul class="social">
+          <li><a href={profile.links.github} target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href={profile.links.linkedin} target="_blank" rel="noopener">LinkedIn</a></li>
+          <li><a href={`mailto:${profile.email}`}>Email</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <main id="content">
+      <section id="work" class="block first fade">
+        <h2 class="eyebrow"><b>/01</b> &nbsp;Selected work</h2>
+        <p class="section-intro">
+          Each one is written up as a small design doc: the problem, the constraint that shaped it, the design, what it
+          cost, and the numbers.
+        </p>
+        <div class="cards">
+          {
+            work.map((w, i) => (
+              <WorkCard
+                href={`/work/${w.id}`}
+                index={i + 1}
+                title={w.data.title}
+                kicker={w.data.kicker}
+                summary={w.data.summary}
+                metrics={w.data.metrics}
+                stack={w.data.stack}
+                code={w.data.links[0]}
+              />
+            ))
+          }
+        </div>
+      </section>
+
+      <section id="about" class="block">
+        <h2 class="eyebrow"><b>/02</b> &nbsp;About</h2>
+        <div class="about">
+          <p class="lede">
+            Six years building backends where <em class="s">correctness is the product</em>: two systems of record that
+            must agree, retries that must be harmless, and deadlines that do not move.
+          </p>
+          <p>
+            Most of that work has been in Go, with TypeScript, Python and Rust where the job needed them. I have built the
+            ledger behind a revolving credit product, a real-time auction that answers inside a 12-second window, and an
+            SDK that provisions full production stacks on Kubernetes.
+          </p>
+          <p>
+            The problems I like are distributed-systems problems: idempotency, ordering, reconciliation, partial failure,
+            and knowing exactly what happens when an upstream is slow or wrong. I like owning a system end to end, from the
+            API and schema to the deploy and the dashboard that tells us when it breaks.
+          </p>
+          <p>
+            Currently a Senior Backend Engineer at <a href="https://qiro.fi" target="_blank" rel="noopener">Qiro Finance</a>{' '}in
+            Bangalore, building the backend of a fintech credit product.
+          </p>
+        </div>
+      </section>
+
+      <section id="experience" class="block">
+        <h2 class="eyebrow"><b>/03</b> &nbsp;Experience</h2>
+        <div class="roles">
+          {
+            experience.map((r, i) => (
+              <details class="role" open={i === 0}>
+                <summary>
+                  <span class="when mono">{r.period}</span>
+                  <span class="who">
+                    <strong>{r.company}</strong>
+                    <span class="pos">{r.title} · {r.place}</span>
+                  </span>
+                  <span class="chev mono" aria-hidden="true">+</span>
+                </summary>
+                <div class="role-body">
+                  <p class="role-sum">{r.summary}</p>
+                  <ul class="points">
+                    {r.points.map((p) => (
+                      <li>{p}</li>
+                    ))}
+                  </ul>
+                  <ul class="tags">
+                    {r.tags.map((t) => (
+                      <li>{t}</li>
+                    ))}
+                  </ul>
+                </div>
+              </details>
+            ))
+          }
+          <div class="edu">
+            <span class="when mono">2015 to 2019</span>
+            <span class="who">
+              <strong>B.E. Computer Engineering</strong>
+              <span class="pos">Institute of Engineering and Technology, DAVV · Indore</span>
+            </span>
+          </div>
+        </div>
+        <a class="more mono" href={resumes[0].file} target="_blank" rel="noopener">View full resume <span class="arrow">↗</span></a>
+      </section>
+
+      <section id="code" class="block">
+        <h2 class="eyebrow"><b>/04</b> &nbsp;Open source</h2>
+        <p class="section-intro">Code you can read and run.</p>
+        <ul class="repos">
+          {
+            openSource.map((r) => {
+              const Tag = r.href ? 'a' : 'div';
+              return (
+                <li>
+                  <Tag class="repo" href={r.href} target={r.href ? '_blank' : undefined} rel={r.href ? 'noopener' : undefined}>
+                    <span class="repo-head">
+                      <span class="mono repo-name">{r.name}</span>
+                      {r.href && <span class="arrow">↗</span>}
+                    </span>
+                    <span class="repo-blurb">{r.blurb}</span>
+                    <span class="repo-meta mono">
+                      {r.lang}
+                      {r.status && <span class="status">{r.status}</span>}
+                      {!r.href && <span class="status">private for now</span>}
+                    </span>
+                  </Tag>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </section>
+
+      <section id="notes" class="block">
+        <h2 class="eyebrow"><b>/05</b> &nbsp;Notes</h2>
+        <p class="section-intro">Short write-ups of things that were not obvious until they broke.</p>
+        <ul class="notes">
+          {
+            notes.map((n) => (
+              <li>
+                <a href={`/notes/${n.id}`}>
+                  <span class="mono nd">{fmt(n.data.date)}</span>
+                  <span>
+                    <strong>{n.data.title}</strong>
+                    <span class="ndesc">{n.data.description}</span>
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <a class="more mono" href="/notes">All notes <span class="arrow">↗</span></a>
+      </section>
+
+      <section class="block" aria-labelledby="stack-h">
+        <h2 id="stack-h" class="eyebrow">Stack</h2>
+        <div class="stack">
+          {
+            stack.map((g) => (
+              <div>
+                <h3>{g.group}</h3>
+                <ul class="tags">
+                  {g.items.map((t) => (
+                    <li>{t}</li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section id="contact" class="block contact">
+        <h2 class="eyebrow"><b>/06</b> &nbsp;Contact</h2>
+        <p class="big">
+          Building something where the <em class="s">money has to add up</em>? I would like to hear about it.
+        </p>
+        <div class="cta">
+          <a class="btn primary" href={`mailto:${profile.email}`}>{profile.email}</a>
+          <a class="btn" href={profile.links.linkedin} target="_blank" rel="noopener">LinkedIn <span class="arrow">↗</span></a>
+          <a class="btn" href={profile.links.github} target="_blank" rel="noopener">GitHub <span class="arrow">↗</span></a>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <p>
+          Built with Astro and plain CSS. Set in Inter, Instrument Serif and JetBrains Mono. Every number on this page is
+          either measured or benchmarked, and says which.
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const links = new Map<string, HTMLElement>();
+    document.querySelectorAll<HTMLElement>('[data-nav]').forEach((a) => links.set(a.dataset.nav!, a));
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          links.forEach((a) => a.classList.remove('active'));
+          links.get(e.target.id)?.classList.add('active');
+        }
+      },
+      { rootMargin: '-35% 0px -60% 0px' },
+    );
+    links.forEach((_, id) => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+  </script>
+</Base>
+
+<style>
+  .shell {
+    max-width: 1240px; margin: 0 auto; padding: 0 48px;
+    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px;
+  }
+  .rail {
+    position: sticky; top: 0; height: 100vh; padding: 88px 0 56px;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 32px;
+  }
+  h1 { font-size: clamp(38px, 4.4vw, 52px); letter-spacing: -0.03em; margin-top: 10px; }
+  h1 a { color: var(--text); }
+  .title { color: var(--text); font-size: 19px; font-weight: 500; margin: 12px 0 0; }
+  .title .s { color: var(--accent); font-size: 22px; }
+  .tagline { max-width: 34ch; margin: 18px 0 0; }
+
+  .nav ul { list-style: none; padding: 0; margin: 0; }
+  .nav a {
+    display: flex; align-items: center; gap: 14px; padding: 7px 0;
+    color: var(--text-faint); font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
+  }
+  .nav .num { font-size: 11px; font-weight: 400; }
+  .nav .bar { width: 28px; height: 1px; background: currentColor; transition: width 0.2s, background 0.2s; }
+  .nav a:hover, .nav a.active { color: var(--text); }
+  .nav a:hover .bar, .nav a.active .bar { width: 60px; background: var(--accent); }
+  .nav a.active .num { color: var(--accent); }
+
+  .rail-foot { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .social { display: flex; gap: 18px; list-style: none; padding: 0; margin: 0; font-size: 14px; }
+  .social a { color: var(--text-dim); }
+  .social a:hover { color: var(--accent); }
+
+  main { padding: 88px 0 64px; min-width: 0; }
+  .block { padding-top: 96px; scroll-margin-top: 24px; }
+  .block.first { padding-top: 22px; }
+  .block > h2 { margin-bottom: 26px; font-size: 12px; font-weight: 400; }
+  .section-intro { margin: -8px 0 22px; color: var(--text-faint); }
+
+  .about p { margin: 0 0 18px; }
+  .about .lede { color: var(--text); font-size: 22px; line-height: 1.45; letter-spacing: -0.01em; }
+  .about .lede .s { color: var(--accent); font-size: 25px; }
+  .about a { color: var(--text); border-bottom: 1px solid var(--line-strong); }
+  .about a:hover { color: var(--accent); border-color: var(--accent); }
+
+  .cards { display: flex; flex-direction: column; gap: 6px; margin: 0 -24px; }
+
+  .roles { border-top: 1px solid var(--line); }
+  .role, .edu { border-bottom: 1px solid var(--line); }
+  .role summary, .edu {
+    display: grid; grid-template-columns: 150px 1fr 20px; gap: 16px; align-items: baseline;
+    padding: 18px 0; cursor: pointer; list-style: none;
+  }
+  .edu { cursor: default; }
+  .role summary::-webkit-details-marker { display: none; }
+  .when { font-size: 12px; color: var(--text-faint); }
+  .who strong { display: block; color: var(--text); font-size: 17px; font-weight: 600; }
+  .pos { font-size: 14px; }
+  .chev { color: var(--accent); font-size: 18px; transition: transform 0.2s; justify-self: end; }
+  .role[open] .chev { transform: rotate(45deg); }
+  .role summary:hover strong { color: var(--accent); }
+  .role-body { padding: 0 0 24px 166px; }
+  .role-sum { color: var(--text); margin: 0 0 12px; }
+  .points { margin: 0 0 16px; padding-left: 1.1em; font-size: 15px; }
+  .points li + li { margin-top: 8px; }
+  .points li::marker { color: var(--accent); }
+
+  .resumes { margin-top: 32px; }
+  .resumes ul { list-style: none; padding: 0; margin: 12px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .resumes a {
+    display: block; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius);
+    transition: border-color 0.15s;
+  }
+  .resumes a:hover { border-color: var(--accent); }
+  .resumes strong { color: var(--text); font-weight: 600; }
+  .resumes a:hover strong { color: var(--accent); }
+  .rn { display: block; font-size: 13px; color: var(--text-faint); margin-top: 2px; }
+
+  .repos { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .repo {
+    height: 100%; display: flex; flex-direction: column; gap: 8px; padding: 16px 18px;
+    border: 1px solid var(--line); border-radius: var(--radius); color: inherit;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  a.repo:hover { border-color: var(--line-strong); background: var(--bg-hover); color: inherit; }
+  .repo-head { display: flex; justify-content: space-between; color: var(--text); }
+  .repo-name { font-size: 14px; font-weight: 500; }
+  a.repo:hover .repo-head { color: var(--accent); }
+  .repo-blurb { font-size: 14px; line-height: 1.55; flex: 1; }
+  .repo-meta { font-size: 11.5px; color: var(--text-faint); display: flex; gap: 10px; }
+  .status { color: var(--accent); }
+
+  .notes { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
+  .notes li { border-bottom: 1px solid var(--line); }
+  .notes a { display: grid; grid-template-columns: 90px 1fr; gap: 16px; padding: 16px 0; color: inherit; }
+  .nd { font-size: 12px; color: var(--text-faint); padding-top: 3px; }
+  .notes strong { display: block; color: var(--text); font-weight: 600; transition: color 0.15s; }
+  .notes a:hover strong { color: var(--accent); }
+  .ndesc { font-size: 14.5px; }
+  .more { display: inline-block; margin-top: 18px; font-size: 13px; color: var(--text-dim); }
+
+  .stack { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 32px; }
+  .stack h3 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+
+  .contact .big { color: var(--text); font-size: clamp(26px, 3vw, 34px); line-height: 1.25; letter-spacing: -0.02em; margin: 0 0 28px; max-width: 22ch; }
+  .contact .big .s { color: var(--accent); }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+
+  .foot { margin-top: 110px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 13px; color: var(--text-faint); }
+  .foot p { max-width: 60ch; margin: 0; }
+
+  @media (max-width: 960px) {
+    .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0 24px; }
+    .rail { position: static; height: auto; padding: 64px 0 8px; }
+    .nav { display: none; }
+    main { padding-top: 40px; }
+    .block { padding-top: 72px; }
+    .cards { margin: 0; }
+  }
+  @media (max-width: 640px) {
+    .repos, .stack, .resumes ul { grid-template-columns: 1fr; }
+    .role summary, .edu { grid-template-columns: 1fr 20px; gap: 4px 12px; }
+    .when { grid-column: 1 / -1; }
+    .role-body { padding-left: 0; }
+    .notes a { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>

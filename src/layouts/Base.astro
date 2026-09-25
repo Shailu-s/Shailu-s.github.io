@@ -1,0 +1,49 @@
+---
+import '../styles/global.css';
+import { profile } from '../data/profile';
+import Backdrop from '../components/Backdrop.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = `${profile.name}, ${profile.title}`,
+  description = profile.tagline,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={profile.name} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#0c0d0f" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script is:inline>
+      try {
+        var q = new URLSearchParams(location.search).get('theme');
+        if (q === 'paper' || q === 'dark') localStorage.setItem('theme', q);
+        if (localStorage.getItem('theme') === 'paper') {
+          document.documentElement.dataset.theme = 'paper';
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f8efdc');
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <Backdrop />
+    <a class="skip" href="#content">Skip to content</a>
+    <div class="theme-fixed"><ThemeToggle /></div>
+    <slot />
+  </body>
+</html>

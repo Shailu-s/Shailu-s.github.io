@@ -1,0 +1,32 @@
+---
+import { getCollection, render } from 'astro:content';
+import Article from '../../layouts/Article.astro';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('notes');
+  return notes.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const date = d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<Article title={d.title} description={d.description} back={{ href: '/notes', label: 'All notes' }}>
+  <header class="fade">
+    <p class="eyebrow"><b>Note</b> &nbsp;· {date}</p>
+    <h1>{d.title}</h1>
+    <p class="desc">{d.description}</p>
+    <ul class="tags">{d.tags.map((t) => <li>{t}</li>)}</ul>
+  </header>
+  <article class="prose">
+    <Content />
+  </article>
+</Article>
+
+<style>
+  h1 { font-size: clamp(30px, 4.2vw, 42px); letter-spacing: -0.03em; margin: 14px 0 16px; max-width: 22ch; }
+  .desc { color: var(--text); font-size: 19px; line-height: 1.55; margin: 0 0 20px; max-width: 60ch; }
+  .prose { margin-top: 40px; }
+</style>

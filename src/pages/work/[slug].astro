@@ -1,0 +1,101 @@
+---
+import { getCollection, render } from 'astro:content';
+import Article from '../../layouts/Article.astro';
+import Flow from '../../components/Flow.astro';
+
+export async function getStaticPaths() {
+  const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+  return work.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: { entry, next: work[(i + 1) % work.length] },
+  }));
+}
+
+const { entry, next } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+---
+
+<Article title={d.title} description={d.summary} back={{ href: '/#work', label: 'All work' }}>
+  <header class="head fade">
+    <p class="eyebrow"><b>{d.kicker}</b> &nbsp;· {d.org} · {d.period}</p>
+    <h1>{d.title}</h1>
+    <p class="sum">{d.summary}</p>
+    <ul class="tags">{d.stack.map((t) => <li>{t}</li>)}</ul>
+    <div class="code">
+      <span class="eyebrow">Code</span>
+      {
+        d.links.length > 0 ? (
+          <ul>
+            {d.links.map((l) => (
+              <li>
+                <a href={l.href} target="_blank" rel="noopener" class="mono">
+                  {l.label} <span class="arrow">↗</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="note">{d.codeNote ?? 'Private.'}</p>
+        )
+      }
+    </div>
+  </header>
+
+  {
+    d.metrics.length > 0 && (
+      <dl class="metrics fade fade-2">
+        {d.metrics.map((m) => (
+          <div>
+            <dt class="mono">{m.value}</dt>
+            <dd>{m.label}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+
+  {
+    d.flow.length > 0 && (
+      <section class="diagram fade fade-3" aria-label="How a request moves through the system">
+        <Flow steps={d.flow} caption="The path of one request" />
+      </section>
+    )
+  }
+
+  <article class="prose">
+    <Content />
+  </article>
+
+  <a class="next" href={`/work/${next.id}`}>
+    <span class="eyebrow">Next case study</span>
+    <strong>{next.data.title} <span class="arrow">↗</span></strong>
+  </a>
+</Article>
+
+<style>
+  .head h1 { font-size: clamp(32px, 4.6vw, 46px); letter-spacing: -0.03em; margin: 14px 0 18px; max-width: 20ch; }
+  .sum { color: var(--text); font-size: 19px; line-height: 1.55; margin: 0 0 22px; max-width: 60ch; }
+  .metrics {
+    margin: 44px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  }
+  .metrics div { background: var(--bg); padding: 18px 20px; }
+  .metrics dt { color: var(--accent); font-size: 24px; font-weight: 500; letter-spacing: -0.02em; }
+  .metrics dd { margin: 4px 0 0; font-size: 13px; line-height: 1.45; color: var(--text-faint); }
+  .diagram { margin-top: 44px; }
+  .prose { margin-top: 16px; }
+  .code { margin-top: 22px; display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; }
+  .code ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .code a {
+    display: inline-block; font-size: 12.5px; color: var(--text);
+    border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 12px;
+  }
+  .code a:hover { color: var(--accent); border-color: var(--accent); }
+  .note { margin: 0; font-size: 14px; color: var(--text-faint); }
+  .next {
+    display: block; margin-top: 56px; padding: 26px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  }
+  .next strong { display: block; margin-top: 6px; font-size: 22px; color: var(--text); letter-spacing: -0.015em; }
+  .next:hover strong { color: var(--accent); }
+</style>

@@ -1,0 +1,45 @@
+---
+import Base from './Base.astro';
+import { profile } from '../data/profile';
+
+interface Props {
+  title: string;
+  description: string;
+  back: { href: string; label: string };
+}
+const { title, description, back } = Astro.props;
+---
+
+<Base title={`${title} · ${profile.name}`} description={description}>
+  <div class="wrap">
+    <nav class="top" aria-label="Breadcrumb">
+      <a href="/" class="home">{profile.name}</a>
+      <a href={back.href} class="back mono">← {back.label}</a>
+    </nav>
+    <main id="content">
+      <slot />
+    </main>
+    <footer class="foot">
+      <a href="/">{profile.name}</a>
+      <span>
+        <a href={`mailto:${profile.email}`}>Email</a> · <a href={profile.links.linkedin} target="_blank" rel="noopener">LinkedIn</a> ·
+        <a href={profile.links.github} target="_blank" rel="noopener">GitHub</a>
+      </span>
+    </footer>
+  </div>
+</Base>
+
+<style>
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 28px; }
+  .top { display: flex; justify-content: space-between; align-items: center; padding: 34px 0; }
+  .home { color: var(--text); font-weight: 600; letter-spacing: -0.01em; }
+  .back { font-size: 13px; color: var(--text-dim); }
+  @media (max-width: 1000px) { .top { padding-right: 100px; } }
+  main { padding: 40px 0 40px; }
+  .foot {
+    margin-top: 80px; padding: 26px 0 48px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 14px;
+  }
+  .foot a { color: var(--text-dim); }
+  .foot a:hover { color: var(--accent); }
+</style>

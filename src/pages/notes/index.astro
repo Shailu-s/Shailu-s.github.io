@@ -1,0 +1,43 @@
+---
+import { getCollection } from 'astro:content';
+import Article from '../../layouts/Article.astro';
+
+const notes = (await getCollection('notes')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+---
+
+<Article title="Notes" description="Short write-ups of backend engineering problems." back={{ href: '/', label: 'Home' }}>
+  <header class="fade">
+    <p class="eyebrow"><b>Notes</b></p>
+    <h1>Things that were <em class="s">not obvious</em> until they broke.</h1>
+  </header>
+  <ul class="list">
+    {
+      notes.map((n) => (
+        <li>
+          <a href={`/notes/${n.id}`}>
+            <span class="mono d">{fmt(n.data.date)}</span>
+            <span>
+              <strong>{n.data.title}</strong>
+              <span class="desc">{n.data.description}</span>
+              <ul class="tags">{n.data.tags.map((t) => <li>{t}</li>)}</ul>
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Article>
+
+<style>
+  h1 { font-size: clamp(30px, 4.2vw, 42px); letter-spacing: -0.03em; margin-top: 14px; max-width: 18ch; }
+  h1 .s { color: var(--accent); }
+  .list { list-style: none; padding: 0; margin: 48px 0 0; border-top: 1px solid var(--line); }
+  .list > li { border-bottom: 1px solid var(--line); }
+  .list a { display: grid; grid-template-columns: 120px 1fr; gap: 18px; padding: 22px 0; color: inherit; }
+  .d { font-size: 12px; color: var(--text-faint); padding-top: 4px; }
+  strong { display: block; color: var(--text); font-size: 18px; font-weight: 600; }
+  .list a:hover strong { color: var(--accent); }
+  .desc { display: block; margin: 4px 0 10px; }
+  @media (max-width: 640px) { .list a { grid-template-columns: 1fr; gap: 4px; } }
+</style>

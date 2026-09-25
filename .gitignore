@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+
+# local-only working notes and material not shown on the site
+DESIGN.md
+_unused-resumes/
+src/content/_archive/

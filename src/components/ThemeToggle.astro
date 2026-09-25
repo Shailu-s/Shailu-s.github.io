@@ -1,0 +1,35 @@
+<button class="theme-toggle mono" type="button" aria-label="Switch colour theme" title="Switch between dark and paper">
+  <span class="sw" aria-hidden="true"></span>
+  <span class="lbl"></span>
+</button>
+
+<script>
+  const label = () => (document.documentElement.dataset.theme === 'paper' ? 'Dark' : 'Paper');
+  document.querySelectorAll<HTMLButtonElement>('.theme-toggle').forEach((btn) => {
+    const lbl = btn.querySelector('.lbl')!;
+    lbl.textContent = label();
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'paper' ? 'dark' : 'paper';
+      document.documentElement.dataset.theme = next;
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', next === 'paper' ? '#f8efdc' : '#0c0d0f');
+      try { localStorage.setItem('theme', next); } catch {}
+      document.querySelectorAll('.theme-toggle .lbl').forEach((l) => (l.textContent = label()));
+      window.dispatchEvent(new Event('themechange'));
+    });
+  });
+</script>
+
+<style>
+  .theme-toggle {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+    font-size: 12px; color: var(--text-dim); background: transparent;
+    border: 1px solid var(--line-strong); border-radius: 999px; padding: 6px 12px 6px 8px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .sw {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: linear-gradient(90deg, #f8efdc 50%, #0c0d0f 50%);
+    border: 1px solid var(--line-strong);
+  }
+</style>

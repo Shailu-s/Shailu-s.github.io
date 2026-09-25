@@ -1,0 +1,152 @@
+<canvas id="backdrop" aria-hidden="true"></canvas>
+<div class="veil" aria-hidden="true"></div>
+
+<script>
+  const canvas = document.getElementById('backdrop') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  type Node = { x: number; y: number; vx: number; vy: number };
+  type Packet = { a: number; b: number; t: number; speed: number };
+
+  const LINK = 150;
+  let w = 0, h = 0, dpr = 1;
+  let nodes: Node[] = [];
+  let packets: Packet[] = [];
+  const mouse = { x: -9999, y: -9999 };
+  let raf = 0;
+  let line = '232,230,225', acc = '245,165,36', dotA = 0.42, lineA = 0.2;
+  function readTheme() {
+    const cs = getComputedStyle(document.documentElement);
+    line = cs.getPropertyValue('--net-rgb').trim() || line;
+    acc = cs.getPropertyValue('--net-accent').trim() || acc;
+    const paper = document.documentElement.dataset.theme === 'paper';
+    dotA = paper ? 0.38 : 0.42;
+    lineA = paper ? 0.22 : 0.2;
+  }
+  let last = 0;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.min(70, Math.max(24, Math.round((w * h) / 24000)));
+    nodes = Array.from({ length: count }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.18,
+      vy: (Math.random() - 0.5) * 0.18,
+    }));
+    packets = [];
+  }
+
+  function spawn() {
+    const a = (Math.random() * nodes.length) | 0;
+    let best = -1, bestD = LINK * LINK;
+    for (let j = 0; j < nodes.length; j++) {
+      if (j === a) continue;
+      const dx = nodes[a].x - nodes[j].x, dy = nodes[a].y - nodes[j].y;
+      const d = dx * dx + dy * dy;
+      if (d < bestD && Math.random() < 0.6) { bestD = d; best = j; }
+    }
+    if (best >= 0) packets.push({ a, b: best, t: 0, speed: 0.006 + Math.random() * 0.008 });
+  }
+
+  function frame(now: number) {
+    const dt = Math.min((now - last) / 16.7, 3);
+    last = now;
+    ctx.clearRect(0, 0, w, h);
+
+    for (const n of nodes) {
+      n.x += n.vx * dt;
+      n.y += n.vy * dt;
+      if (n.x < -20) n.x = w + 20; else if (n.x > w + 20) n.x = -20;
+      if (n.y < -20) n.y = h + 20; else if (n.y > h + 20) n.y = -20;
+    }
+
+    ctx.lineWidth = 1;
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 > LINK * LINK) continue;
+        const alpha = (1 - Math.sqrt(d2) / LINK) * lineA;
+        ctx.strokeStyle = `rgba(${line},${alpha})`;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+    }
+
+    for (const n of nodes) {
+      const dx = n.x - mouse.x, dy = n.y - mouse.y;
+      const near = dx * dx + dy * dy < 140 * 140;
+      ctx.fillStyle = near ? `rgba(${acc},0.85)` : `rgba(${line},${dotA})`;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, near ? 2.2 : 1.4, 0, 6.283);
+      ctx.fill();
+    }
+
+    if (!still && packets.length < 10 && Math.random() < 0.05 * dt) spawn();
+    packets = packets.filter((p) => {
+      p.t += p.speed * dt;
+      const a = nodes[p.a], b = nodes[p.b];
+      const dx = a.x - b.x, dy = a.y - b.y;
+      if (p.t >= 1 || dx * dx + dy * dy > LINK * LINK * 1.4) return false;
+      const x = a.x + (b.x - a.x) * p.t, y = a.y + (b.y - a.y) * p.t;
+      ctx.fillStyle = `rgba(${acc},0.18)`;
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 6.283);
+      ctx.fill();
+      ctx.fillStyle = `rgba(${acc},0.9)`;
+      ctx.beginPath();
+      ctx.arc(x, y, 1.8, 0, 6.283);
+      ctx.fill();
+      return true;
+    });
+
+    if (!still) raf = requestAnimationFrame(frame);
+  }
+
+  function start() {
+    cancelAnimationFrame(raf);
+    last = performance.now();
+    raf = requestAnimationFrame(frame);
+  }
+
+  let resizeTimer = 0;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => { resize(); start(); }, 150);
+  });
+  window.addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelAnimationFrame(raf);
+    else if (!still) start();
+  });
+
+  window.addEventListener('themechange', () => { readTheme(); if (still) frame(performance.now()); });
+
+  readTheme();
+  resize();
+  start();
+</script>
+
+<style>
+  canvas {
+    position: fixed; inset: 0; width: 100vw; height: 100vh;
+    z-index: -2; pointer-events: none;
+  }
+  .veil {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(900px 600px at 12% 8%, var(--glow), transparent 60%),
+      radial-gradient(800px 700px at 70% 55%, var(--veil), transparent 75%);
+  }
+</style>
