@@ -7,7 +7,6 @@ export const profile = {
   email: 'srajawat024@gmail.com',
   links: {
     github: 'https://github.com/Shailu-s',
-    githubProjects: 'https://github.com/srajawat-hub',
     linkedin: 'https://linkedin.com/in/shailendrasinghw3',
   },
 };
@@ -78,11 +77,10 @@ export type Repo = { name: string; href?: string; lang: string; blurb: string; s
 export const openSource: Repo[] = [
   { name: 'shortn', href: 'https://github.com/Shailu-s/shortn', lang: 'Go', blurb: 'URL shortener load-tested until it broke. 37,893 requests/s measured, and the bugs that only showed up under load.' },
   { name: 'payments-platform', href: 'https://github.com/Shailu-s/payments-platform', lang: 'Go', blurb: 'Money movement through unreliable providers on a double-entry ledger. Eight guarantees, each backed by a test.', status: 'in design' },
-  { name: 'p2p-chat', href: 'https://github.com/srajawat-hub/p2p-chat', lang: 'Go', blurb: 'Peer-to-peer messaging node: gossip routing, store-and-forward for offline peers, end-to-end encryption. 31 tests.' },
+  { name: 'p2p-messenger', href: 'https://github.com/Shailu-s/p2p-messenger', lang: 'Go', blurb: 'Peer-to-peer messaging node: gossip routing, store-and-forward for offline peers, end-to-end encryption. 31 tests.' },
   { name: 'order-execution-service', href: 'https://github.com/Shailu-s/order-execution-service', lang: 'TypeScript', blurb: 'Conditional order engine (stop-loss, take-profit, stop-limit) driven by a WebSocket price feed. 99 tests.' },
   { name: 'Matching-engine-orderbook', href: 'https://github.com/Shailu-s/Matching-engine-orderbook', lang: 'Go', blurb: 'Order book that matches buys and sells with partial fills, order queues and persistence.' },
   { name: 'card-engine', lang: 'Go', blurb: 'Card authorization against a reservation ledger inside a 2-second budget, with batched settlement and reconciliation.', status: 'in progress' },
-  { name: 'indexer', href: 'https://github.com/srajawat-hub/indexer', lang: 'Rust', blurb: 'Real-time event ingestion from six sources into one Postgres schema, with idempotent batch writes. Sole author.' },
 ];
 
 export const stack = [

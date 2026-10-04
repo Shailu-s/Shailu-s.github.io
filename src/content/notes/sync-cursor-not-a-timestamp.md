@@ -5,7 +5,7 @@ date: 2026-09-25
 tags: [P2P, distributed systems, Go]
 ---
 
-In [p2p-chat](https://github.com/srajawat-hub/p2p-chat), a node that was offline reconnects and
+In [p2p-messenger](https://github.com/Shailu-s/p2p-messenger), a node that was offline reconnects and
 asks a peer for the messages it missed, one page at a time. The obvious cursor for "give me
 everything after here" is a timestamp. It is wrong.
 

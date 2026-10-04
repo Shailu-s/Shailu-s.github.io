@@ -17,7 +17,7 @@ flow:
   - { label: 'Reconnect', detail: 'peer book redials continuously' }
   - { label: 'Sync', detail: 'opaque per-peer cursor' }
 links:
-  - { label: 'srajawat-hub/p2p-chat', href: 'https://github.com/srajawat-hub/p2p-chat' }
+  - { label: 'Shailu-s/p2p-messenger', href: 'https://github.com/Shailu-s/p2p-messenger' }
 ---
 
 ## The problem
