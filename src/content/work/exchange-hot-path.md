@@ -8,8 +8,8 @@ summary: A Go exchange core with a TCP gateway, a write-ahead journal, pre-trade
 stack: [Go, TCP, write-ahead log, fsync, Docker]
 metrics:
   - { value: '500K/s', label: 'orders end to end, each durable before its ack' }
-  - { value: '2-5M/s', label: 'orders through the matching core alone' }
-  - { value: '~6 ms', label: 'p50 at a steady 50K orders/sec' }
+  - { value: '5-6M/s', label: 'orders through the matching core alone' }
+  - { value: '<15 ms', label: 'p99 at a steady 200K orders/sec' }
 flow:
   - { label: 'Gateway', detail: 'binary TCP, backpressure' }
   - { label: 'Sequencer', detail: 'single writer, batches' }
@@ -49,13 +49,14 @@ from not letting that flush cap throughput.
 
 | Layer added | Orders/sec, median of 3 runs |
 |---|---|
-| Matching only, one thread | 2.7M |
-| + risk reserve and settlement | 1.5M |
-| + sequencer and journal, no fsync | 0.9M |
-| + fsync per batch | 467K |
-| + TCP gateway, separate process | 413K |
+| Matching only, one thread | 6.1M |
+| + risk reserve and settlement | 3.7M |
+| + sequencer and journal, no fsync | 1.7M |
+| + fsync per batch | 511K |
+| + TCP gateway, separate process | 508K |
 
-Measured on an Apple M4 laptop with other workloads running; a quieter run reached 580K end to end. Fixed-rate runs measure latency from the scheduled send time,
+Measured on an Apple M4 laptop with Docker and other apps closed. At fixed rates from 10K to 200K
+orders/sec, p50 was 5-7 ms and p99 8-14 ms in all three runs. Fixed-rate runs measure latency from the scheduled send time,
 so a stalled server cannot hide by slowing the client down.
 
 ## Recovery
@@ -70,9 +71,10 @@ load and checks that no acknowledged order is ever lost.
 
 Latency. An order waits for the flush already in progress and then its own, so p50 sits near
 one and a half flushes, about 6 ms, while matching itself takes well under a microsecond. The
-p99 follows the disk: on macOS a flush occasionally stalls for tens of milliseconds, and
-everything queued behind it waits. Production venues avoid that by replicating the journal to
-another machine's memory and acknowledging on replication instead of on a local flush.
+p99 follows the disk and the machine: on a quiet laptop it stays at 8-14 ms, but with Docker
+and other apps running it reached 50-800 ms, because every order queued behind a slow flush waits
+for it. Production venues avoid that by replicating the journal to another machine's memory and
+acknowledging on replication instead of on a local flush.
 
 ## What I left out on purpose
 
