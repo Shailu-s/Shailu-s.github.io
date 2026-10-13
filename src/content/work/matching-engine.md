@@ -41,7 +41,7 @@ other than the hot path.
 - On restart, the engine **rebuilds the book by replaying persisted order history**.
 
 That keeps match latency under a millisecond, and the matcher was benchmarked at **more than
-45,000 orders per second**.
+45,000 trades per second**.
 
 ## The cost
 

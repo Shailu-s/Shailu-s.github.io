@@ -7,7 +7,7 @@ order: 1.5
 summary: A Go exchange core with a TCP gateway, a write-ahead journal, pre-trade risk and a price-time order book. Every layer is benchmarked on its own, so a headline number never hides what it leaves out.
 stack: [Go, TCP, write-ahead log, fsync, Docker]
 metrics:
-  - { value: '410-580K/s', label: 'orders end to end, each durable before its ack' }
+  - { value: '500K/s', label: 'orders end to end, each durable before its ack' }
   - { value: '2-5M/s', label: 'orders through the matching core alone' }
   - { value: '~6 ms', label: 'p50 at a steady 50K orders/sec' }
 flow:
