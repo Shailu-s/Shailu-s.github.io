@@ -8,7 +8,7 @@ summary: A Go matching engine on an in-memory order book. Matching never waits o
 stack: [Go, PostgreSQL, MongoDB, RabbitMQ, TypeScript]
 metrics:
   - { value: '45K+/s', label: 'orders matched, benchmarked' }
-  - { value: '500+/s', label: 'orders settled on-chain in production' }
+  - { value: 'Batched', label: 'on-chain settlement of matched orders' }
   - { value: '<1 ms', label: 'match latency' }
 flow:
   - { label: 'Order in', detail: 'signed and validated' }
@@ -57,9 +57,9 @@ consistent without a central coordinator.
 
 ## What actually bound throughput
 
-The matcher was never the bottleneck in production. Settlement was on-chain, and it held **more
-than 500 orders per second** in production, bounded by gas limits and how many orders fit in
-each batch rather than by matching. That is roughly a 90x gap. Making the matcher faster
+The matcher was never the bottleneck in production. Matched orders were **settled on-chain in
+batches**, so throughput was bounded by gas limits and how many orders fit in each batch rather
+than by matching. Making the matcher faster
 would have changed nothing a user could see. The work that mattered was batching settlement well.
 That is the most useful lesson from this system: measure the whole path before optimising the
 part that is fun to optimise.
